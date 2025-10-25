@@ -1,16 +1,17 @@
 /*VARIABLES*/
 :root {
-    --font: Roboto;
+    --background_color: #131218;
     --font_color: #fff8eb;
-
-    --header_font_size: 5rem;
-    --header_font_weight: 900;
-    --subheader_font_size: 2rem;
-    --subheader_font_weight: 300;
 
     --canvas_button_color: #476c9b;
     --audio_button_color: #ef6351;
     --video_button_color: #9c528b;
+
+    --font_family: Roboto;
+    --header_font_size: 6rem;
+    --header_font_weight: 900;
+    --subheader_font_size: 3rem;
+    --subheader_font_weight: 300;
 }
 
 
@@ -33,20 +34,18 @@
 #buttonContainer {
     margin-top: 3rem;
     margin-bottom: 3rem;
-}   
+}
 
 
 
 body {
     min-height: 100vh;
     min-width: 100vw;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    font-family: var(--font);
-    background: #131218;
+    font-family: var(--font_family);
+    background: var(--background_color);
     color: var(--font_color);
 }
 
@@ -76,7 +75,7 @@ button:hover {
 
 
 
-/*CORE CLASSES*/
+/*HTML CLASSES*/
 .main_container {}
 
 .centered_flexbox {
@@ -94,13 +93,13 @@ button:hover {
 }
 
 .date_label {
-    text-align: right;
+    text-align: center;
     font-size: var(--subheader_font_size);
     font-weight: var(--subheader_font_weight);
 }
 
 .day_label {
-    text-align: right;
+    text-align: center;
     font-size: var(--subheader_font_size);
     font-weight: var(--subheader_font_weight);
 }
@@ -127,9 +126,50 @@ button:hover {
 
 
 
-/*DYNAMIC CLASSES*/
+/*SCRIPT CLASSES*/
 .selected {
     border-width: 3px;
     border-style: solid;
     border-color: var(--font_color)
+}
+
+.hidden {
+    display: none;
+}
+
+
+
+
+
+
+/*MULTI-SCREEN SUPPORT*/
+@media (max-width: 768px) {
+    :root {
+        --header_font_size: 4rem;
+        --subheader_font_size: 2rem;
+    }
+
+    #buttonContainer {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    button {
+        width: 12rem;
+    }
+}
+
+@media (max-width: 480px) {
+    :root {
+        --header_font_size: 3rem;
+        --subheader_font_size: 1.5rem;
+    }
+
+    #dayLabel {
+        display: none;
+    }
+
+    button {
+        width: 8rem;
+    }
 }
