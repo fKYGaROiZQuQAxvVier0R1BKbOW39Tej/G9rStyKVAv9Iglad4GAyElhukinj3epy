@@ -1,7 +1,7 @@
 // #region VARIABLES
 
 const sounds = {
-    click: new Audio('assets/sounds/template.mp3'),
+    template: new Audio('assets/sounds/template.mp3'),
 }
 
 // #endregion VARIABLES
