@@ -9,23 +9,24 @@
     
         <link rel="stylesheet" href="style.css">
         
-        <script src="canvas.js" defer></script>
-        <script src="buttons.js" defer></script>
+        <script src="particle_manager.js" defer></script>
+        <script src="theme_manager.js" defer></script>
         <script src="clock.js" defer></script>
+        <script src="ready.js" defer></script>
     </head>
 
     <body>
         <div id="backgroundPanel">
-            <div id="canvasToggle" class="hidden">
-                <canvas></canvas>
+            <div id="theme1Toggle" class="hidden">
+                <canvas id="canvas1"></canvas>
             </div>
 
-            <div id="audioToggle" class="hidden">
-                <!-- <audio></audio> -->
+            <div id="theme2Toggle" class="hidden">
+                <canvas id="canvas2"></canvas>
             </div>
-            
-            <div id="videoToggle" class="hidden">
-                <!-- <video></video> -->
+
+            <div id="theme3Toggle" class="hidden">
+                <canvas id="canvas3"></canvas>
             </div>
         </div>
 
@@ -34,9 +35,9 @@
             <div id="dateLabel" class="date_label">January 1, 1970</div>
             <div id="dayLabel" class="day_label">Thursday</div>
             <div id="buttonContainer" class="centered_flexbox">
-                <button id="canvasButton" class="canvas_button">Canvas</button>
-                <button id="audioButton" class="audio_button">Audio</button>
-                <button id="videoButton" class="video_button">Video</button>
+                <button id="theme1Button" class="theme_button deselected">Theme One</button>
+                <button id="theme2Button" class="theme_button deselected">Theme Two</button>
+                <button id="theme3Button" class="theme_button deselected">Theme Three</button>
             </div>
         </div>
     </body>

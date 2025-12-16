@@ -26,7 +26,7 @@ const _dayLabel = document.getElementById('dayLabel')
 
 //#region CORE
 
-function _updateClock() {
+function _syncClock() {
     const now = new Date()
 
     let hour = now.getHours().toString().padStart(2, '0')
@@ -49,5 +49,5 @@ function _updateClock() {
 
 
 
-_updateClock()
-setInterval(_updateClock, 1000)
+_syncClock()
+setInterval(_syncClock, 1000)

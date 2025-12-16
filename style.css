@@ -1,17 +1,21 @@
 /*VARIABLES*/
 :root {
-    --background_color: #131218;
-    --font_color: #fff8eb;
+    /*colors*/
+    --background_color: rgba(255, 255, 255, 1);
+    --font_color: rgba(0, 0, 0, 1);
+    --button_background: rgba(0, 0, 0, 1);
+    --button_font_color: rgba(255, 255, 255, 1);
+    --deselected_border_color: rgba(216, 162, 162, 0);
+    --selected_border_color: rgba(128, 128, 128, 1);
 
-    --canvas_button_color: #476c9b;
-    --audio_button_color: #ef6351;
-    --video_button_color: #9c528b;
-
-    --font_family: Roboto;
+    /*sizes*/
     --header_font_size: 6rem;
     --header_font_weight: 900;
     --subheader_font_size: 3rem;
     --subheader_font_weight: 300;
+    
+    /*miscelleanous*/
+    --font_family: Roboto;
 }
 
 
@@ -38,21 +42,20 @@
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0);
-    z-index: -1;
 }
-
-
 
 #buttonContainer {
     margin-top: 3rem;
     margin-bottom: 3rem;
 }
 
-
-
-#canvasToggle {
+#theme1Toggle, #theme2Toggle, #theme3Toggle {
     height: 100%;
     width: 100%;
+}
+
+#canvas1, #canvas2, #canvas3 {
+    display: block;
 }
 
 
@@ -65,24 +68,19 @@ body {
     justify-content: center;
     font-family: var(--font_family);
     background: var(--background_color);
-    color: var(--font_color);
 }
-
-
 
 button {
     padding: 0.75rem 1.5rem;
 
     border-style: solid;
-    border-color: transparent;
+    border-width: 2px;
     border-radius: 6px;
 
     font-size: 1rem;
     cursor: pointer;
     transition: transform 0.1s linear;
 }
-
-
 
 button:hover {
     transform: scale(1.10);
@@ -96,7 +94,9 @@ button:hover {
 
 
 /*HTML CLASSES*/
-.main_container {}
+.main_container {
+    z-index: 1;
+}
 
 .centered_flexbox {
     display: flex;
@@ -126,19 +126,9 @@ button:hover {
 
 
 
-.canvas_button {
-    background: var(--canvas_button_color);
-    color: var(--font_color)
-}
-
-.audio_button {
-    background: var(--audio_button_color);
-    color: var(--font_color)
-}
-
-.video_button {
-    background: var(--video_button_color);
-    color: var(--font_color)
+.theme_button {
+    background: var(--button_background);
+    color: var(--button_font_color);
 }
 
 
@@ -147,8 +137,12 @@ button:hover {
 
 
 /*SCRIPT CLASSES*/
+.deselected {
+    border-color: var(--deselected_border_color);
+}
+
 .selected {
-    border-color: var(--font_color)
+    border-color: var(--selected_border_color);
 }
 
 .hidden {
