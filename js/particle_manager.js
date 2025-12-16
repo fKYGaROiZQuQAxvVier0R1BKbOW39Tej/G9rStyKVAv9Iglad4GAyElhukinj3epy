@@ -1,4 +1,4 @@
-//#region PARTICLE SYSTEM CLASS
+//#region CLASSES
 
 class ParticleManager {
     constructor(canvasId, config) {
@@ -55,12 +55,6 @@ class ParticleManager {
         this.animationFrameId = requestAnimationFrame(() => this._animate())
     }
 }
-
-//#endregion PARTICLE SYSTEM CLASS
-
-
-
-//#region PARTICLE CLASS
 
 class Particle {
     constructor(parentParticleManager, applyPreSimulation = false) {
@@ -121,7 +115,7 @@ class Particle {
     }
 }
 
-//#endregion PARTICLE CLASS
+//#endregion CLASSES
 
 
 
