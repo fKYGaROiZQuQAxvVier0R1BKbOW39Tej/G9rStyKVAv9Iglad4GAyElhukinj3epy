@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather</title>
+</head>
+<body>
+    <script>
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=weather_code`)
+                .then(res => res.json())
+                .then(data => {
+                    const code = data.current.weather_code;
+                    
+                    let weather;
+                    if ([51, 53, 55, 56, 57, 61, 63, 65, 66, 67, 80, 81, 82, 95, 96, 99].includes(code)) {
+                        weather = 'rainy';
+                    } else if ([1, 2, 3, 45, 48].includes(code)) {
+                        weather = 'cloudy';
+                    } else {
+                        weather = 'sunny';
+                    }
+                    
+                    console.log(weather);
+                });
+        });
+    </script>
+</body>
+</html>

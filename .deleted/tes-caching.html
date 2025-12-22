@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <style>
+    @font-face {
+      font-family: 'ByteBounce';
+      src: url('ByteBounce_modified.ttf') format('truetype');
+    }
+
+    body {
+      margin: 0;
+      height: 100vh;
+      background-color: #5d7388;
+      overflow: hidden;
+    }
+
+    #stage {
+      position: absolute;
+      top: 0;
+      height: 100vh;
+      width: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      overflow: hidden;
+    }
+
+    #layers {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .layer {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .layer-inner {
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      transform: translate3d(0,0,0);
+      will-change: transform;
+    }
+
+    .layer canvas {
+      image-rendering: pixelated;
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: auto;
+      pointer-events: none;
+      transform: translate3d(0,0,0);
+      will-change: transform;
+    }
+
+    .time-text {
+      position: absolute;
+      font-family: 'ByteBounce', monospace;
+      color: white;
+      font-size: 48px;
+      left: 50%;
+      top: 30%;
+      transform: translate(-50%, 0);
+      z-index: 1000;
+      line-height: 1.2;
+      white-space: nowrap;
+      text-align: center;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div id="layers"></div>
+    <div class="time-text">:<br>Friday</div>
+  </div>
+
+  <script>
+    //#region GLOBALS
+
+    const _stage = document.getElementById('stage')
+    const _layersContainer = document.getElementById('layers')
+    const _layers = []
+
+    let _zIndex = 0
+    let _stageHeight = 0
+    let _baseSet = false
+    let NOW = 0
+
+    //#endregion GLOBALS
+
+
+
+    //#region HELPER FUNCTIONS
+
+    function _tintCanvas(canvas, image, r, g, b) {
+      const ctx = canvas.getContext('2d')
+      canvas.width = image.naturalWidth
+      canvas.height = image.naturalHeight
+      ctx.imageSmoothingEnabled = false
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.drawImage(image, 0, 0)
+      
+      if (r !== 255 || g !== 255 || b !== 255) {
+        ctx.globalCompositeOperation = 'multiply'
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.globalCompositeOperation = 'destination-in'
+        ctx.drawImage(image, 0, 0)
+      }
+      
+      ctx.globalCompositeOperation = 'source-over'
+    }
+
+    //#endregion HELPER FUNCTIONS
+
+
+
+    //#region STAGE MANAGEMENT
+
+    function _resizeStage() {
+      _stageHeight = _stage.getBoundingClientRect().height
+      _layers.forEach(layer => layer._resize())
+    }
+
+    function _setupStage() {
+      new ResizeObserver(_resizeStage).observe(_stage)
+      window.addEventListener('resize', _resizeStage)
+    }
+
+    //#endregion STAGE MANAGEMENT
+
+
+
+    //#region TWEENER CLASS
+
+    class Tweener {
+      constructor() {
+        this.tweens = []
+      }
+
+      tween(target, property, toValue, duration) {
+        // Remove any existing tween for the same target+property
+        this.tweens = this.tweens.filter(t => !(t.target === target && t.property === property))
+        
+        if (duration === 0) {
+          target[property] = toValue
+          return
+        }
+        
+        this.tweens.push({
+          target,
+          property,
+          fromValue: target[property],
+          toValue,
+          elapsed: 0,
+          duration
+        })
+      }
+
+      process(dt) {
+        for (let i = this.tweens.length - 1; i >= 0; i--) {
+          const tween = this.tweens[i]
+          tween.elapsed += dt
+          
+          if (tween.elapsed >= tween.duration) {
+            tween.target[tween.property] = tween.toValue
+            this.tweens.splice(i, 1)
+          } else {
+            const t = tween.elapsed / tween.duration
+            // Simple linear interpolation
+            tween.target[tween.property] = tween.fromValue + (tween.toValue - tween.fromValue) * t
+          }
+        }
+      }
+    }
+
+    const _tweener = new Tweener()
+
+    //#endregion TWEENER CLASS
+
+
+
+    //#region ANIMATION LOOP
+
+    let _lastTime = performance.now()
+
+    function process() {
+      const time = performance.now()
+      const dt = Math.min(0.05, (time - _lastTime) / 1000) // delta in seconds, capped at 50ms
+      _lastTime = time
+      NOW = time
+
+      _tweener.process(dt)
+      _layers.forEach(layer => layer._process(dt))
+
+      requestAnimationFrame(process)
+    }
+
+    //#endregion ANIMATION LOOP
+
+
+
+    //#region LAYER CLASS
+
+    class Layer {
+      constructor(imagePath) {
+        this.wrapper = document.createElement('div')
+        this.wrapper.className = 'layer'
+        this.wrapper.style.zIndex = _zIndex++
+        _layersContainer.appendChild(this.wrapper)
+
+        this.inner = document.createElement('div')
+        this.inner.className = 'layer-inner'
+        this.wrapper.appendChild(this.inner)
+
+        this.image = new Image()
+        this.canvases = []
+
+        this.offsetX = 0
+        this.offsetY = 0
+        this.opacity = 1
+        this.speed = 0
+        this.colorR = 255
+        this.colorG = 255
+        this.colorB = 255
+
+        this.scrollOffset = 0
+        this.scale = 1
+        this.width = 0
+        
+        this._lastDOMOpacity = null
+        this._lastDOMOffsetX = null
+        this._lastDOMOffsetY = null
+        this._lastDrawnR = null
+        this._lastDrawnG = null
+        this._lastDrawnB = null
+        
+        this.built = false
+        
+        this._createCanvases()
+        
+        this.image.onload = () => this._build()
+        this.image.src = imagePath
+        _layers.push(this)
+      }
+
+      _createCanvases() {
+        for (let i = 0; i < 2; i++) {
+          const canvas = document.createElement('canvas')
+          this.inner.appendChild(canvas)
+          this.canvases.push(canvas)
+        }
+      }
+
+      setOffset(x = 0, y = 0, duration = 0) {
+        _tweener.tween(this, 'offsetX', x, duration)
+        _tweener.tween(this, 'offsetY', -y, duration)
+        if (duration === 0) this._updateDOMOffset()
+        return this
+      }
+
+      setOpacity(value, duration = 0) {
+        _tweener.tween(this, 'opacity', Math.max(0, Math.min(1, value)), duration)
+        if (duration === 0) this._updateDOMOpacity()
+        return this
+      }
+
+      setColor(r, g, b, duration = 0) {
+        _tweener.tween(this, 'colorR', r, duration)
+        _tweener.tween(this, 'colorG', g, duration)
+        _tweener.tween(this, 'colorB', b, duration)
+        if (duration === 0) this._redrawCanvas()
+        return this
+      }
+
+      setSpeed(speed, duration = 0) {
+        _tweener.tween(this, 'speed', speed === null ? 0 : speed, duration)
+        return this
+      }
+
+      resetOffset(duration = 0) { return this.setOffset(0, 0, duration) }
+      resetOpacity(duration = 0) { return this.setOpacity(1, duration) }
+      resetSpeed(duration = 0) { return this.setSpeed(0, duration) }
+      resetColor(duration = 0) { return this.setColor(255, 255, 255, duration) }
+
+      _updateDOMOpacity() {
+        if (this._lastDOMOpacity !== this.opacity) {
+          this.wrapper.style.opacity = this.opacity
+          this._lastDOMOpacity = this.opacity
+        }
+      }
+
+      _updateDOMOffset() {
+        if (this._lastDOMOffsetX !== this.offsetX || this._lastDOMOffsetY !== this.offsetY) {
+          this.inner.style.transform = `translate3d(${this.offsetX}px, ${this.offsetY}px, 0)`
+          this._lastDOMOffsetX = this.offsetX
+          this._lastDOMOffsetY = this.offsetY
+        }
+      }
+
+      _resize() {
+        if (!_stageHeight || !this.image.naturalHeight) return
+        
+        this.scale = _stageHeight / this.image.naturalHeight
+        this.width = this.image.naturalWidth * this.scale
+        this.wrapper.style.width = this.width + 'px'
+        this.canvases.forEach(c => c.style.width = this.width + 'px')
+        
+        this._positionScrollTiles()
+      }
+
+      _positionScrollTiles() {
+        const nw = this.image.naturalWidth
+        const normalizedOffset = (((this.scrollOffset % nw) + nw) % nw)
+        const shift = normalizedOffset * this.scale
+        
+        this.canvases[0].style.transform = `translate3d(${-shift}px, 0, 0)`
+        this.canvases[1].style.transform = `translate3d(${this.width - shift}px, 0, 0)`
+      }
+
+      _redrawCanvas() {
+        const r = Math.round(this.colorR)
+        const g = Math.round(this.colorG)
+        const b = Math.round(this.colorB)
+        
+        this.canvases.forEach(c => _tintCanvas(c, this.image, r, g, b))
+        this._lastDrawnR = r
+        this._lastDrawnG = g
+        this._lastDrawnB = b
+      }
+
+      _process(dt) {
+        if (!this.built) return
+
+        this._updateDOMOpacity()
+        this._updateDOMOffset()
+
+        const r = Math.round(this.colorR)
+        const g = Math.round(this.colorG)
+        const b = Math.round(this.colorB)
+        
+        if (r !== this._lastDrawnR || g !== this._lastDrawnG || b !== this._lastDrawnB) {
+          this._redrawCanvas()
+        }
+
+        if (this.speed !== 0) {
+          this.scrollOffset -= this.speed * dt * 60 
+          this._positionScrollTiles()
+        }
+      }
+
+      _build() {
+        if (this.built) return
+        this.built = true
+
+        if (!_baseSet) {
+          _baseSet = true
+          _stage.style.aspectRatio = `${this.image.naturalWidth} / ${this.image.naturalHeight}`
+          requestAnimationFrame(_resizeStage)
+        }
+
+        this._updateDOMOpacity()
+        this._updateDOMOffset()
+        this._redrawCanvas()
+        this._resize()
+        this._positionScrollTiles()
+      }
+    }
+
+    //#endregion LAYER CLASS
+
+
+
+    //#region INITIALIZATION
+
+    _setupStage()
+    _resizeStage()
+
+    let sky = new Layer("sky.png").setColor(251, 204, 186)
+    let medium_clouds = new Layer("medium_clouds.png").setColor(0, 0, 255).setSpeed(0.05)
+    let big_clouds = new Layer("big_clouds.png").setColor(255, 0, 0).setSpeed(0.025)
+    let buildings = new Layer("buildings.png")
+    let foreground = new Layer("foreground.png")
+    let raycasts = new Layer("raycasts.png").setColor(255, 173, 139)
+    let papers = new Layer("papers.png")
+
+    process()
+
+    //#endregion INITIALIZATION
+
+    function _dev() {
+  console.log('Starting performance test sequence (10 seconds)...')
+  
+  const layers = [sky, medium_clouds, big_clouds, buildings, foreground, raycasts, papers]
+  
+  for (let i = 0; i < 10; i++) {
+    setTimeout(() => {
+      layers.forEach(layer => {
+        const r = Math.floor(Math.random() * 256)
+        const g = Math.floor(Math.random() * 256)
+        const b = Math.floor(Math.random() * 256)
+        const opacity = Math.random()
+        const speed = Math.random() * 5
+        const offsetX = Math.random() * 200 - 100
+        const offsetY = Math.random() * 200 - 100
+        
+        layer.setColor(r, g, b, 1)
+        layer.setOpacity(opacity, 1)
+        layer.setSpeed(speed, 1)
+        layer.setOffset(offsetX, offsetY, 1)
+      })
+    }, i * 1000)
+  }
+  
+  setTimeout(() => {
+    layers.forEach(layer => {
+      layer.setSpeed(0, 0)
+      layer.setOpacity(1, 0)
+      layer.setColor(255, 0, 0, 0)
+    })
+    console.log('STOP RECORDING - Test complete')
+  }, 10000)
+}
+  </script>
+</body>
+</html>
