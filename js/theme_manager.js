@@ -1,5 +1,3 @@
-//#region VARIABLES
-
 // const template = {
 //     blendMode: "normal",
 //     colorPool: [
@@ -93,102 +91,78 @@ const themes = {
         button: document.getElementById("theme1Button"),
         content: document.getElementById("theme1Toggle"),
         particleManager: new ParticleManager("canvas1", particleConfigTheme1),
-        onSelect: appliedTheme1,
-        onDeselect: removedTheme1
+        on_select: applied_theme_1,
+        on_deselect: removed_theme_1
     },
     theme2: {
         button: document.getElementById("theme2Button"),
         content: document.getElementById("theme2Toggle"),
         particleManager: new ParticleManager("canvas2", particleConfigTheme2),
-        onSelect: appliedTheme2,
-        onDeselect: removedTheme2
+        on_select: applied_theme_2,
+        on_deselect: removed_theme_2
     },
     theme3: {
         button: document.getElementById("theme3Button"),
         content: document.getElementById("theme3Toggle"),
         particleManager: new ParticleManager("canvas3", particleConfigTheme3),
-        onSelect: appliedTheme3,
-        onDeselect: removedTheme3
+        on_select: applied_theme_3,
+        on_deselect: removed_theme_3
     }
 }
 
 let _activeTheme = null
 
-//#endregion VARIABLES
-
-
-
-
-
-
-//#region THEME FUNCTIONS
-
-function appliedTheme1() {
+function applied_theme_1() {
     console.log("Applied: theme1")
 }
 
-function removedTheme1() {
+function removed_theme_1() {
     console.log("Removed: theme1")
 }
 
-
-
-function appliedTheme2() {
+function applied_theme_2() {
     console.log("Applied: theme2")
 }
 
-function removedTheme2() {
+function removed_theme_2() {
     console.log("Removed: theme2")
 }
 
-
-
-function appliedTheme3() {
+function applied_theme_3() {
     console.log("Applied: theme3")
 }
 
-function removedTheme3() {
+function removed_theme_3() {
     console.log("Removed: theme3")
 }
 
-//#endregion THEME FUNCTIONS
-
-
-
-
-
-
-//#region CORE
-
-function _onThemeButtonClicked(theme) {
+function _on_theme_button_clicked(theme) {
     const alreadySelected = _activeTheme === theme
     if (alreadySelected) {
-        _deselectTheme(theme)
+        _deselect_theme(theme)
         return
     }
     const shouldCleanupPrevious = _activeTheme !== null
     if (shouldCleanupPrevious) {
-        _deselectTheme(_activeTheme)
+        _deselect_theme(_activeTheme)
     }
-    _selectTheme(theme)
+    _select_theme(theme)
 }
 
-function _selectTheme(theme) {
+function _select_theme(theme) {
     themes[theme].button.classList.add("selected")
     themes[theme].button.classList.remove("deselected")
     themes[theme].content.classList.remove("hidden")
     themes[theme].particleManager.start()
-    themes[theme].onSelect()
+    themes[theme].on_select()
     _activeTheme = theme
 }
 
-function _deselectTheme(theme) {
+function _deselect_theme(theme) {
     themes[theme].button.classList.remove("selected")
     themes[theme].button.classList.add("deselected")
     themes[theme].content.classList.add("hidden")
     themes[theme].particleManager.stop()
-    themes[theme].onDeselect()
+    themes[theme].on_deselect()
     _activeTheme = null
 }
-
-//#endregion CORE

@@ -9,14 +9,20 @@
     
         <link rel="stylesheet" href="css/style.css">
         
+        <script src="js/utils.js" defer></script>
+        <script src="js/process_manager.js" defer></script>
+        <script src="js/parallax_manager.js" defer></script>
         <script src="js/particle_manager.js" defer></script>
         <script src="js/theme_manager.js" defer></script>
-        <script src="js/sounds.js" defer></script>
-        <script src="js/clock.js" defer></script>
-        <script src="js/ready.js" defer></script>
+        <script src="js/sound_manager.js" defer></script>
+        <script src="js/clock_manager.js" defer></script>
+        <script src="js/main.js" defer></script>
     </head>
 
     <body>
+        <div id="stage">
+            <div id="layers"></div>
+        </div>
         <div id="backgroundPanel">
             <div id="theme1Toggle" class="hidden">
                 <canvas id="canvas1"></canvas>

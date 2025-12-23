@@ -4,7 +4,7 @@ class ProcessManager {
     static _delta = 0
     static _lastTime = 0
 
-    static registerProcess(node) {
+    static register_process_node(node) {
         this._processList.push(node)
     }
 
@@ -26,9 +26,11 @@ class ProcessManager {
         requestAnimationFrame(this._process)
     }
 
-    static startProcessLoop() {
+    static start_process_loop() {
         requestAnimationFrame(this._process)
     }
-}
 
-ProcessManager._ready()
+    static {
+        this._ready()
+    }
+}

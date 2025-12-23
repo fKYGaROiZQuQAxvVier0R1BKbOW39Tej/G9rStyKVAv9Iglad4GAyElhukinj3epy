@@ -1,5 +1,3 @@
-//#region CLASSES
-
 class ParticleManager {
     constructor(canvasId, config) {
         this.canvas = document.getElementById(canvasId)
@@ -104,39 +102,13 @@ class Particle {
         this.x = this.canvas.width / 2 + offsetX
         this.y = this.canvas.height / 2 + offsetY
 
-        this.size = _randomRange(this.config.minSize, this.config.maxSize)
-        this.vx = _randomRange(-this.config.maxSpeed, this.config.maxSpeed)
-        this.vy = _randomRange(-this.config.maxSpeed, this.config.maxSpeed)
-        this.color = _getWeightedColor(this.config.colorPool)
-        this.lifetime = _randomRange(this.config.minLifetime, this.config.maxLifetime)
+        this.size = Utils.Math.randf_range(this.config.minSize, this.config.maxSize)
+        this.vx = Utils.Math.randf_range(-this.config.maxSpeed, this.config.maxSpeed)
+        this.vy = Utils.Math.randf_range(-this.config.maxSpeed, this.config.maxSpeed)
+        this.color = Utils.Math.get_weighted_variant(this.config.colorPool.map(item => item.color), this.config.colorPool.map(item => item.weight))
+        this.lifetime = Utils.Math.randf_range(this.config.minLifetime, this.config.maxLifetime)
         this.age = applyPreSimulation && this.config.preSimulation > 0 
             ? Math.random() * Math.min(this.lifetime, this.config.preSimulation) 
             : -Math.random() * this.config.maxSpawnDelay
     }
 }
-
-//#endregion CLASSES
-
-
-
-//#endregion HELPER FUNCTIONS
-
-function _randomRange(min, max) {
-    return min + Math.random() * (max - min)
-}
-
-function _getWeightedColor(colorPool) {
-    const totalWeight = colorPool.reduce((sum, item) => sum + item.weight, 0)
-    let random = Math.random() * totalWeight
-    
-    for (let item of colorPool) {
-        random -= item.weight
-        if (random <= 0) {
-            return item.color
-        }
-    }
-    
-    return colorPool[colorPool.length - 1].color
-}
-
-//#endregion HELPER FUNCTIONS
