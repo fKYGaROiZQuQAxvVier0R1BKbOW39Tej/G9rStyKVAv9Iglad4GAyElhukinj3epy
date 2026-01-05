@@ -1,209 +1,153 @@
 class ParallaxManager {
-    static _tweener = new Utils.Tweener()
-    static _stage = document.getElementById('stage')
-    static _lastZIndex = 0
-    static _layersContainer = document.getElementById('layers')
-    static _layers = []
+    // VARIABLES
+    static #tweener = new Utils.Tweener()
+    static #stage = document.getElementById('stage')
+    static #layersContainer = document.getElementById('layers')
+    static #layers = []
 
-    static _ready() {
-        this._stage.style.aspectRatio = '1.355'
-        console.log("Parallax manager loaded")
-    }
-
-    static get_tweener() {
-        return this._tweener
-    }
-
+    
+    // PUBLIC
     static create_layer(imagePath) {
         const wrapper = document.createElement('div')
         wrapper.className = 'layer'
-        wrapper.style.zIndex = this._lastZIndex++
 
         const inner = document.createElement('div')
         inner.className = 'layer-inner'
+        
         wrapper.appendChild(inner)
 
-        const canvases = []
-        for (let i = 0; i < 2; i++) {
-            const c = document.createElement('canvas')
-            inner.appendChild(c)
-            canvases.push(c)
-        }
+        const tileCanvases = []
+        Utils.Math.range(2).forEach(i => {
+            const canvas = document.createElement('canvas')
+            inner.appendChild(canvas)
+            tileCanvases.push(canvas)
+        })
 
-        this._layersContainer.appendChild(wrapper)
+        this.#layersContainer.appendChild(wrapper)
 
-        const layer = new ParallaxLayer(imagePath, wrapper, inner, canvases)
-        this._layers.push(layer)
+        const layer = new ParallaxLayer(imagePath, wrapper, inner, tileCanvases)
+        this.#layers.push(layer)
 
         return layer
     }
 
-    static stress(duration = 10) {
-        const xOffsetLimits = [-300, 300]
-        const yOffsetLimits = [-300, 300]
-        const colorLimits = [[0, 255], [0, 255], [0, 255]]
-        const opacityLimits = [0, 1]
-        const speedLimits = [0, 300]
-
-        
-        let revolutions = 0
-        const run_revolution = () => {
-            this._layers.forEach(layer => {
-                const randomX = xOffsetLimits[0] + Math.random() * (xOffsetLimits[1] - xOffsetLimits[0])
-                const randomY = yOffsetLimits[0] + Math.random() * (yOffsetLimits[1] - yOffsetLimits[0])
-                const randomR = Math.floor(colorLimits[0][0] + Math.random() * (colorLimits[0][1] - colorLimits[0][0]))
-                const randomG = Math.floor(colorLimits[1][0] + Math.random() * (colorLimits[1][1] - colorLimits[1][0]))
-                const randomB = Math.floor(colorLimits[2][0] + Math.random() * (colorLimits[2][1] - colorLimits[2][0]))
-                const randomOpacity = opacityLimits[0] + Math.random() * (opacityLimits[1] - opacityLimits[0])
-                const randomSpeed = speedLimits[0] + Math.random() * (speedLimits[1] - speedLimits[0])
-
-                layer.set_offset(randomX, randomY, 1)
-                layer.set_color(randomR, randomG, randomB, 1)
-                layer.set_opacity(randomOpacity, 1)
-                layer.set_speed(randomSpeed, 1)
-            })  
-
-            revolutions++
-            if (revolutions < duration) {
-                setTimeout(run_revolution, 1000)
-            } else {
-                console.log("Stress test finished")
-            }
-        }
-
-        run_revolution()
-        return "Running stress test..."
+    static get_layer(variableName) {
+        return window[variableName]
+    }
+    
+    static get_tweener() {
+        return this.#tweener
     }
 
+
+    // PRIVATE
+    static #ready() {
+        this.#stage.style.aspectRatio = '1.355'
+        console.log("Parallax manager loaded")
+    }
+    
+
+    // INIT
     static {
-        this._ready()
+        this.#ready()
     }
 }
 
-class ParallaxLayer {
-    constructor(imagePath, wrapper, inner, canvases) {
-        this.image = new Image()
-        this.image.src = imagePath
-        this.wrapper = wrapper
-        this.inner = inner
-        this.canvases = canvases
+class ParallaxLayer extends AbstractScrollLayer {
+    // VARIABLES
+    #image
+    #wrapper
+    #inner
+    #tileCanvases
+    #scrollOffset = 0
+    #scale = 1
+    #width = 0
 
-        this.offsetX = 0
-        this.offsetY = 0
-        this.opacity = 1
-        this.speed = 0
-        this.colorR = 255
-        this.colorG = 255
-        this.colorB = 255
 
-        this.scrollOffset = 0
-        this.scale = 1
-        this.width = 0
+    // PUBLIC
+    constructor(imagePath, wrapper, inner, tileCanvases) {
+        super()
+        
+        this.#image = new Image()
+        this.#image.src = imagePath
+        this.#wrapper = wrapper
+        this.#inner = inner
+        this.#tileCanvases = tileCanvases
 
-        this._ready()
+        this.#ready()
     }
 
-    export_as(variableName) {
-        window[variableName] = this
 
-        return this
-    }
-
-    set_offset(x = 0, y = 0, duration = 0) {
-        ParallaxManager.get_tweener()
-            .tween(this, 'offsetX', x, duration)
-            .tween(this, 'offsetY', y, duration)
-
-        return this
-    }
-
-    set_opacity(value, duration = 0) {
-        ParallaxManager.get_tweener()
-            .tween(this, 'opacity', Math.max(0, Math.min(1, value)), duration)
-
-        return this
-    }
-
-    set_color(r, g, b, duration = 0) {
-        ParallaxManager.get_tweener()
-            .tween(this, 'colorR', r, duration)
-            .tween(this, 'colorG', g, duration)
-            .tween(this, 'colorB', b, duration)
-
-        return this
-    }
-
-    set_speed(speed, duration = 0) {
-        ParallaxManager.get_tweener()
-            .tween(this, 'speed', speed === null ? 0 : speed, duration)
-
-        return this
-    }
-
-    reset_offset(duration = 0) { 
-        return this.set_offset(0, 0, duration)
-    }
-
-    reset_opacity(duration = 0) { 
-        return this.set_opacity(1, duration)
-    }
-
-    reset_speed(duration = 0) { 
-        return this.set_speed(0, duration)
-    }
-
-    reset_color(duration = 0) { 
-        return this.set_color(255, 255, 255, duration)
-    }
-
-    _ready() {
+    // PRIVATE
+    #ready() {
         ProcessManager.register_process_node(this)
     }
 
     _process(delta) {
-        this.wrapper.style.opacity = this.opacity
-        this.inner.style.transform = `translate(0px, ${this.offsetY}px)`
-        this.canvases.forEach(canvas => this._process_canvas(delta, canvas))
+        this.#tileCanvases.forEach(canvas => {
+            this.#resize(canvas)
+        })
+
+        this.#apply_offset()
+        this.#apply_opacity()
+        this.#apply_scroll(delta)
+
+        this.#tileCanvases.forEach(canvas => {
+            this.#draw(canvas)
+        })
     }
 
-    _resize(canvas) {
-        this.scale = this.wrapper.getBoundingClientRect().height / this.image.naturalHeight
-        this.width = this.image.naturalWidth * this.scale
-        this.wrapper.style.width = this.width + 'px'
-        canvas.style.width = this.width + 'px'
+    #resize(canvas) {
+        const h = this.#image.naturalHeight
+        const w = this.#image.naturalWidth
+
+        if (this.vertical) {
+            this.#wrapper.style.width = '100%'
+            const rect = this.#wrapper.getBoundingClientRect()
+            this.#scale = rect.width / w
+            this.#width = rect.width
+            const height = h * this.#scale
+            this.#wrapper.style.height = height + 'px'
+            canvas.style.width = '100%'
+            canvas.style.height = height + 'px'
+        } else {
+            const rect = this.#wrapper.getBoundingClientRect()
+            this.#scale = rect.height / h
+            this.#width = w * this.#scale
+            this.#wrapper.style.width = this.#width + 'px'
+            this.#wrapper.style.height = ''
+            canvas.style.width = this.#width + 'px'
+            canvas.style.height = ''
+        }
     }
 
-    _process_canvas(delta, canvas) {
-        this._resize(canvas)
-
+    #draw(canvas) {
         const c = canvas.getContext('2d')
-        canvas.width = this.image.naturalWidth
-        canvas.height = this.image.naturalHeight
+        canvas.width = this.#image.naturalWidth
+        canvas.height = this.#image.naturalHeight
 
         c.clearRect(0, 0, canvas.width, canvas.height)
-        c.drawImage(this.image, 0, 0)
+        c.drawImage(this.#image, 0, 0)
         c.globalCompositeOperation = 'multiply'
         c.fillStyle = `rgb(${this.colorR}, ${this.colorG}, ${this.colorB})`
         c.fillRect(0, 0, canvas.width, canvas.height)
         c.globalCompositeOperation = 'destination-in'
-        c.drawImage(this.image, 0, 0)
-        c.globalCompositeOperation = 'source-over'
-        
-        if (this.speed !== 0) {
-            this.scrollOffset -= this.speed * delta
-        }
+        c.drawImage(this.#image, 0, 0)
+    }
 
-        const nw = this.image.naturalWidth
-        const normalizedOffset = (((this.scrollOffset % nw) + nw) % nw)
-        const baseShift = normalizedOffset * this.scale
+    #apply_offset() {
+        const y = this.offsetY * this.#scale
+        this.#inner.style.transform = `translate(0px, ${y}px)`
+    }
 
-        const w = this.width
-        const shift = ((((baseShift - this.offsetX) % w) + w) % w)
+    #apply_opacity() {
+        this.#wrapper.style.opacity = this.opacity
+    }
 
-        this.canvases[0].style.width = (w + 1) + 'px'
-        this.canvases[1].style.width = (w + 1) + 'px'
-
-        this.canvases[0].style.transform = `translate(${-shift}px)`
-        this.canvases[1].style.transform = `translate(${w - shift - 1}px)`
+    #apply_scroll(delta) {
+        this.#scrollOffset -= this.scrollSpeed * delta
+        const shift = Utils.Math.fposmod((this.#scrollOffset - this.offsetX) * this.#scale, this.#width)
+        this.#tileCanvases[0].style.transform = `translate(${-shift}px)`
+        this.#tileCanvases[1].style.transform = `translate(${this.#width - shift - 1}px)`
     }
 }

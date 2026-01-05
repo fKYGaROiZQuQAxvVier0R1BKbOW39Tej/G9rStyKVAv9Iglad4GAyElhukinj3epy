@@ -1,20 +1,19 @@
 class SoundManager {
-    static _ready() {
-        console.log("Sound manager loaded")
-    }
-
+    // PUBLIC
     static play(sound) {
         sound.currentTime = 0
         sound.play()
     }
     
-    static get_sounds() {
-        return {
-            template: new Audio('assets/sounds/template.mp3'),
-        }
+
+    // PRIVATE
+    static #ready() {
+        console.log("Sound manager loaded")
     }
 
+    
+    // INIT
     static {
-        this._ready()
+        this.#ready()
     }
 }

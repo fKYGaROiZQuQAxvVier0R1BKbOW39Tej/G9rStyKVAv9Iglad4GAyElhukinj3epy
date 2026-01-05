@@ -10,30 +10,32 @@
         <link rel="stylesheet" href="css/style.css">
         
         <script src="js/utils.js" defer></script>
+        <script src="js/resources.js" defer></script>
+        <script src="js/abstract_layer.js" defer></script>
         <script src="js/process_manager.js" defer></script>
+        <script src="js/sound_manager.js" defer></script>
+        <script src="js/video_manager.js" defer></script>
+        <script src="js/weather_manager.js" defer></script>
+        <script src="js/clock_manager.js" defer></script>
         <script src="js/parallax_manager.js" defer></script>
         <script src="js/particle_manager.js" defer></script>
         <script src="js/theme_manager.js" defer></script>
-        <script src="js/sound_manager.js" defer></script>
-        <script src="js/clock_manager.js" defer></script>
         <script src="js/main.js" defer></script>
     </head>
 
     <body>
+        <video id="videoPlayer" src="assets/videos/loading.mp4" autoplay muted loop playsinline preload="auto"></video>
         <div id="stage">
             <div id="layers"></div>
         </div>
-        <div id="backgroundPanel">
-            <div id="theme1Toggle" class="hidden">
-                <canvas id="canvas1"></canvas>
-            </div>
+        <div id="backgroundPanel"></div>
 
-            <div id="theme2Toggle" class="hidden">
-                <canvas id="canvas2"></canvas>
-            </div>
-
-            <div id="theme3Toggle" class="hidden">
-                <canvas id="canvas3"></canvas>
+        <button id="themeMenuButton" class="theme_button deselected">☰</button>
+        <div id="themeMenuPanel" class="hidden">
+            <div id="buttonContainer" class="centered_flexbox">
+                <button id="theme1Button" class="theme_button deselected">sunset rain</button>
+                <button id="theme2Button" class="theme_button deselected">midday clear</button>
+                <button id="theme3Button" class="theme_button deselected">midnight snow</button>
             </div>
         </div>
 
@@ -41,11 +43,6 @@
             <div id="timeLabel" class="time_label">12:00:00</div>
             <div id="dateLabel" class="date_label">January 1, 1970</div>
             <div id="dayLabel" class="day_label">Thursday</div>
-            <div id="buttonContainer" class="centered_flexbox">
-                <button id="theme1Button" class="theme_button deselected">Theme One</button>
-                <button id="theme2Button" class="theme_button deselected">Theme Two</button>
-                <button id="theme3Button" class="theme_button deselected">Theme Three</button>
-            </div>
         </div>
     </body>
 </html>

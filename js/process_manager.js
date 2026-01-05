@@ -1,36 +1,39 @@
 class ProcessManager {
-    static _processList = []
+    // VARIABLES
+    static #registeredNodes = []
+    static #delta = 0
+    static #lastTime = 0
+    
 
-    static _delta = 0
-    static _lastTime = 0
-
+    // PUBLIC
     static register_process_node(node) {
-        this._processList.push(node)
+        this.#registeredNodes.push(node)
     }
+    
+    static unregister_process_node(node) {
+        this.#registeredNodes.splice(this.#registeredNodes.indexOf(node), 1)
+    }
+    
+    static start_process_loop() {
+        this._process(0)
+    }
+    
 
-    static _ready() {
+    // PRIVATE
+    static #ready() {
         console.log("Process manager loaded")
     }
 
-    static _process = (newTime) => {
-        if (this._lastTime === 0) {
-            this._lastTime = newTime
-        }
-
-        this._delta = Math.min(0.05, (newTime - this._lastTime) / 1000)
-        this._lastTime = newTime
-
-        for (let i = 0; i < this._processList.length; i++)
-            this._processList[i]._process(this._delta)
-
+    static _process = (now) => {
+        this.#delta = Math.min(50, now - this.#lastTime)
+        this.#lastTime = now
+        this.#registeredNodes.forEach(node => node._process(this.#delta))
         requestAnimationFrame(this._process)
     }
 
-    static start_process_loop() {
-        requestAnimationFrame(this._process)
-    }
-
+    
+    // INIT
     static {
-        this._ready()
+        this.#ready()
     }
 }

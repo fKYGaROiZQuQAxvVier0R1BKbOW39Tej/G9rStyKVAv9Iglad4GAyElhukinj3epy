@@ -1,0 +1,1 @@
+console.log(`WeatherData.rain ${WeatherData.rain} \nWeatherData.snow ${WeatherData.snowfall} \nWeatherData.wind ${WeatherData.windspeed}\nWeatherData.visibility ${WeatherData.visibility}`);
